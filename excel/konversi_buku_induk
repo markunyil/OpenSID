@@ -1,7 +1,18 @@
+Dim wsData As Worksheet
+Dim wsKonversi As Worksheet
+
+
+
 Public Sub test()
-    With ActiveSheet
+    Dim ws As Worksheet
+    Dim myTextBox As Shape
+
+    Set ws = Worksheets("Konversi")
+    Set wsData = Worksheets("BIP_Desa")
+
+    With ws
         Set myTextBox = Shapes.AddTextbox(msoTextOrientationHorizontal, 100, 100, 200, 50)
-        myTextBox.TextFrame.Characters.Text = "Jumlah baris: " & jumlahBaris()
+        myTextBox.TextFrame.Characters.Text = "Jumlah baris: " & jumlahBaris(wsData)
         tunggu (1)
     End With
 End Sub
@@ -10,15 +21,17 @@ Public Sub konversiKeKolom()
 Dim rHapus As Range
 Dim myTextBox As Shape
 
-    Worksheets("BIP_Desa").Activate
+    Set wsData = Worksheets("BIP_Desa")
+    Set wsKonversi = Worksheets("Konversi")
+    Set myTextBox = wsKonversi.Shapes.AddTextbox(msoTextOrientationHorizontal, 100, 100, 200, 50)
 
-  With ActiveSheet
-    Set myTextBox = Shapes.AddTextbox(msoTextOrientationHorizontal, 100, 100, 200, 50)
     myTextBox.TextFrame.Characters.Text = "Jumlah baris: " & jumlahBaris()
     tunggu (1)
+
     barisJudul = headerRow(myTextBox)
 
-    For i = 1 To jumlahBaris
+With wsData
+    For i = 1 To jumlahBaris()
         Set c = Cells(i, 2)
         no_kk = 0
         If c.Text = "NO.KK" Then
@@ -61,12 +74,12 @@ Dim myTextBox As Shape
     myTextBox.TextFrame.Characters.Text = "Menghapus baris-baris judul..."
     tunggu (1)
     rHapus.EntireRow.Delete
+    myTextBox.TextFrame.Characters.Text = "Selesai!!"
 
 End With
 End Sub
 
 Public Function getRW(alamat)
-    With ActiveSheet
         rwPos = InStr(1, alamat, "RW:")
         If rwPos > 0 Then
             getRW = Mid(alamat, rwPos + Len("RW:"))
@@ -74,11 +87,9 @@ Public Function getRW(alamat)
         Else
             getRW = ""
         End If
-    End With
 End Function
 
 Public Function getRT(alamat)
-    With ActiveSheet
         pos = InStr(1, alamat, "RT:")
         If pos > 0 Then
             getRT = Mid(alamat, pos + Len("RT:"))
@@ -86,18 +97,20 @@ Public Function getRT(alamat)
         Else
             getRT = ""
         End If
-    End With
 End Function
 
 Public Function jumlahBaris()
-    jumlahBaris = ActiveSheet.Cells.Find(What:="*", After:=ActiveSheet.Cells(1, 1), LookIn:=xlFormulas, LookAt:= _
+    jumlahBaris = wsData.Cells.Find(What:="*", After:=wsData.Cells(1, 1), LookIn:=xlFormulas, LookAt:= _
 xlPart, SearchOrder:=xlByRows, SearchDirection:=xlPrevious, MatchCase:=False).Row
 End Function
 
 Public Function headerRow(myTextBox)
-    With ActiveSheet
-        myTextBox.TextFrame.Characters.Text = "Unmerge dan tambah kolom..."
-        tunggu (1)
+    Dim c As Range
+
+    myTextBox.TextFrame.Characters.Text = "Unmerge dan tambah kolom..."
+    tunggu (1)
+
+    With wsData
         Cells.UnMerge
         Columns("C:F").Insert Shift:=xlToRight
 
@@ -123,6 +136,8 @@ Public Function tunggu(milliseconds)
     DoEvents
   Next i
 End Function
+
+
 
 
 
