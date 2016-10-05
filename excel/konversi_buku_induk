@@ -1,0 +1,129 @@
+Public Sub test()
+    With ActiveSheet
+        Set myTextBox = Shapes.AddTextbox(msoTextOrientationHorizontal, 100, 100, 200, 50)
+        myTextBox.TextFrame.Characters.Text = "Jumlah baris: " & jumlahBaris()
+        tunggu (1)
+    End With
+End Sub
+Public Sub konversiKeKolom()
+
+Dim rHapus As Range
+Dim myTextBox As Shape
+
+    Worksheets("BIP_Desa").Activate
+
+  With ActiveSheet
+    Set myTextBox = Shapes.AddTextbox(msoTextOrientationHorizontal, 100, 100, 200, 50)
+    myTextBox.TextFrame.Characters.Text = "Jumlah baris: " & jumlahBaris()
+    tunggu (1)
+    barisJudul = headerRow(myTextBox)
+
+    For i = 1 To jumlahBaris
+        Set c = Cells(i, 2)
+        no_kk = 0
+        If c.Text = "NO.KK" Then
+            If i < barisJudul Then
+                j = i + 1
+            Else
+                j = i + 2
+            End If
+            Set rHapus = Union(Rows(i & ":" & j), rHapus)
+            i = i + 1
+            no_kk = Cells(i, 2)
+            alamat = Cells(i, 11)
+            myTextBox.TextFrame.Characters.Text = "KK " + no_kk + " " + alamat
+            tunggu (1)
+            i = i + 2
+        End If
+        If no_kk > 0 Then
+            Do While IsNumeric(Cells(i, 2).Text)
+                Cells(i, 3).NumberFormat = "@"
+                Cells(i, 3).Value = no_kk
+                Cells(i, 4).Value = alamat
+                Cells(i, 5).NumberFormat = "@"
+                Cells(i, 5).Value = getRW(alamat)
+                Cells(i, 6).NumberFormat = "@"
+                Cells(i, 6).Value = getRT(alamat)
+                i = i + 1
+            Loop
+            i = i - 1
+        Else
+          ' Baris untuk dihapus
+            If rHapus Is Nothing Then
+                Set rHapus = Rows(i)
+            Else
+                Set rHapus = Union(Rows(i), rHapus)
+            End If
+        End If
+
+    Next i
+
+    myTextBox.TextFrame.Characters.Text = "Menghapus baris-baris judul..."
+    tunggu (1)
+    rHapus.EntireRow.Delete
+
+End With
+End Sub
+
+Public Function getRW(alamat)
+    With ActiveSheet
+        rwPos = InStr(1, alamat, "RW:")
+        If rwPos > 0 Then
+            getRW = Mid(alamat, rwPos + Len("RW:"))
+            getRW = Left(getRW, InStr(1, getRW, ",") - 1)
+        Else
+            getRW = ""
+        End If
+    End With
+End Function
+
+Public Function getRT(alamat)
+    With ActiveSheet
+        pos = InStr(1, alamat, "RT:")
+        If pos > 0 Then
+            getRT = Mid(alamat, pos + Len("RT:"))
+            getRT = Left(getRT, InStr(1, getRT, ",") - 1)
+        Else
+            getRT = ""
+        End If
+    End With
+End Function
+
+Public Function jumlahBaris()
+    jumlahBaris = ActiveSheet.Cells.Find(What:="*", After:=ActiveSheet.Cells(1, 1), LookIn:=xlFormulas, LookAt:= _
+xlPart, SearchOrder:=xlByRows, SearchDirection:=xlPrevious, MatchCase:=False).Row
+End Function
+
+Public Function headerRow(myTextBox)
+    With ActiveSheet
+        myTextBox.TextFrame.Characters.Text = "Unmerge dan tambah kolom..."
+        tunggu (1)
+        Cells.UnMerge
+        Columns("C:F").Insert Shift:=xlToRight
+
+        headerRow = 0
+        For i = 1 To 20
+            Set c = Cells(i, 2)
+            If c.Text = "NO" Then
+                headerRow = i
+                Exit For
+            End If
+        Next i
+        Cells(headerRow, 3) = "NO_KK"
+        Cells(headerRow, 4) = "DUSUN"
+        Cells(headerRow, 5) = "RW"
+        Cells(headerRow, 6) = "RT"
+    End With
+End Function
+
+Public Function tunggu(milliseconds)
+  Count = milliseconds
+  For i = 1 To Count
+    s = "string"
+    DoEvents
+  Next i
+End Function
+
+
+
+
